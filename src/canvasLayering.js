@@ -33,7 +33,7 @@ class Layer{
         setTimeout(function(){ 
         that.context.drawImage(img,0,0,that.size[0],that.size[1]);
         that.whole.render(); 
-        }, 500);
+        }, 200);
         
     }
     up(){
@@ -142,7 +142,6 @@ class Layer{
         }
         this.ImageData();
         this.alphaProcesingData=procent;
-        canvas.render();
     }
     
     ImageDataStarted(){
@@ -157,7 +156,6 @@ class Layer{
             this.alpha.push(this.layerData[i+3]);
         }
         this.ImageData();
-        console.log(this.layerImage)
     }
     /* analyze and make Image Data for render */
     ImageData(){
@@ -192,6 +190,7 @@ class Canvas{
         this.histogramDataB=[];
         this.histView=false;
         this.chart="";
+        this.options="";
         document.getElementById(workspace).appendChild(this.canvas);
     }
     createLayer(name,size){
@@ -228,8 +227,10 @@ class Canvas{
             if(layer.visible){
                 that.context.drawImage(layer.canvas,0,0,layer.size[0],layer.size[1]);
             }
-        });   
-        this.histogram();
+        }); 
+        if(this.histView){
+            this.histogram();
+        }
     }
     histogram(){
         var data = this.context.getImageData(0,0,this.size[0],this.size[1]).data;
@@ -261,9 +262,10 @@ class Canvas{
         this.histView=!this.histView;
         /*zde dodělat zobrazení grafu */
         google.charts.load('current', {'packages':['corechart']});
+        let that=this;
         google.charts.setOnLoadCallback(drawChart);
 
-        let options = {
+        this.options = {
             legend: 'none',
             backgroundColor: { fill:'transparent' },
             vAxis: {viewWindow: {
@@ -282,22 +284,17 @@ class Canvas{
                 datas.push([i,0]); 
             }
             var data = google.visualization.arrayToDataTable(datas);
-            var divHist='<div class="histograms"><div class="btns-hist"><button class="canvasLayeringBtnHist cLBHActive" data-type="y"></button><button class="canvasLayeringBtnHist" data-type="r"></button><button class="canvasLayeringBtnHist" data-type="g"></button><button class="canvasLayeringBtnHist" data-type="b"></button></div><div id="CLHistogram"></div></div>';
+            var divHist='<div class="histograms"><div class="btns-hist"><button onclick="changeHistColor(this)" class="canvasLayeringBtnHist cLBHActive" data-type="y"></button><button  onclick="changeHistColor(this)"  class="canvasLayeringBtnHist" data-type="r"></button><button onclick="changeHistColor(this)"  class="canvasLayeringBtnHist" data-type="g"></button><button onclick="changeHistColor(this)" class="canvasLayeringBtnHist" data-type="b"></button></div><div id="CLHistogram"></div></div>';
             document.getElementById(div).innerHTML+=divHist;
             setTimeout(function(){
-                this.chart = new google.visualization.AreaChart(document.getElementById("CLHistogram"));
-                this.chart.draw(data, options);
-                
-            },50);
+            that.chart = new google.visualization.AreaChart(document.getElementById("CLHistogram"));
+            that.chart.draw(data, that.options);},50);
         }
-        let that = this;
-        setTimeout(function(){      
-            that.render(); 
-        },100);
     }
     updateHistogram(){
+        console.log(this.histView);
         if(this.histView){
-            var type= document.getElementById("canvasLayeringBtnHist-Active").getAttribute("data-type");
+            var type= document.getElementsByClassName("cLBHActive")[0].getAttribute("data-type")||"y";
             var data ="";
             var color="";
             if(type=="g"){
@@ -316,14 +313,20 @@ class Canvas{
                 data=this.histogramDataY;
                 color=['#dddddd'];
             }
-            options.colors = color;
+            this.options.colors = color;
             var datos=data;
             var datas=new Array(['hodnoty', color]);
             for (var i = 0; i < 256; i++) {
-                datas.push([i,datos[i]]); 
+                datas.push([i,datos[0][i]]); 
             }
             var arr=google.visualization.arrayToDataTable(datas);
-            this.chart.draw(arr, options);
+            this.chart.draw(arr, this.options);
         }
     }
+}
+function changeHistColor(el){ 
+    console.log(el);
+    document.getElementsByClassName("cLBHActive")[0].classList.remove("cLBHActive");
+    el.classList.add("cLBHActive");
+    canvas.updateHistogram();
 }
