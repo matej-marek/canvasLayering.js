@@ -190,6 +190,8 @@ class Canvas{
         this.histogramDataR=[];
         this.histogramDataG=[];
         this.histogramDataB=[];
+        this.histView=false;
+        this.chart="";
         document.getElementById(workspace).appendChild(this.canvas);
     }
     createLayer(name,size){
@@ -253,5 +255,75 @@ class Canvas{
         this.histogramDataR.push(r);
         this.histogramDataG.push(g);
         this.histogramDataB.push(b);
+        this.updateHistogram();
+    }
+    showHistogram(div){
+        this.histView=!this.histView;
+        /*zde dodělat zobrazení grafu */
+        google.charts.load('current', {'packages':['corechart']});
+        google.charts.setOnLoadCallback(drawChart);
+
+        let options = {
+            legend: 'none',
+            backgroundColor: { fill:'transparent' },
+            vAxis: {viewWindow: {
+                    min: 0,
+                    max:20000
+                },
+                scaleType: 'lin',
+                gridlines: { count: 0 }
+            },
+            colors: ['#dddddd']
+        };
+
+        function drawChart() {
+            var datas=new Array(['hodnoty', 'Y']);
+            for (var i = 0; i < 256; i++) {
+                datas.push([i,0]); 
+            }
+            var data = google.visualization.arrayToDataTable(datas);
+            var divHist='<div class="histograms"><div class="btns-hist"><button class="canvasLayeringBtnHist cLBHActive" data-type="y"></button><button class="canvasLayeringBtnHist" data-type="r"></button><button class="canvasLayeringBtnHist" data-type="g"></button><button class="canvasLayeringBtnHist" data-type="b"></button></div><div id="CLHistogram"></div></div>';
+            document.getElementById(div).innerHTML+=divHist;
+            setTimeout(function(){
+                this.chart = new google.visualization.AreaChart(document.getElementById("CLHistogram"));
+                this.chart.draw(data, options);
+                
+            },50);
+        }
+        let that = this;
+        setTimeout(function(){      
+            that.render(); 
+        },100);
+    }
+    updateHistogram(){
+        if(this.histView){
+            var type= document.getElementById("canvasLayeringBtnHist-Active").getAttribute("data-type");
+            var data ="";
+            var color="";
+            if(type=="g"){
+                data=this.histogramDataG;
+                color=['#00ff00'];
+            }
+            else if(type=="r"){
+                data=this.histogramDataR;
+                color=['#ff0000'];
+            }
+            else if(type=="b"){
+                data=this.histogramDataB;
+                color=['#0000ff'];
+            }
+            else if(type=="y"){
+                data=this.histogramDataY;
+                color=['#dddddd'];
+            }
+            options.colors = color;
+            var datos=data;
+            var datas=new Array(['hodnoty', color]);
+            for (var i = 0; i < 256; i++) {
+                datas.push([i,datos[i]]); 
+            }
+            var arr=google.visualization.arrayToDataTable(datas);
+            this.chart.draw(arr, options);
+        }
     }
 }
