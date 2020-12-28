@@ -336,6 +336,7 @@ class Canvas{
     }
     // download image from whole canvas
     download(name,format){
+        name=name||"untitled";
         format=format||"jpg";
         var datafrom = this.canvas;
         var link = document.createElement('a');
@@ -344,9 +345,13 @@ class Canvas{
             link.download = name+'.jpg';
             link.href = datafrom.toDataURL("image/jpeg");
         }
-        else{
+        else if(format=="png"){
             link.download = name+'.png';
             link.href = datafrom.toDataURL("image/png");
+        }
+        else{
+            link.download = name+'.webp';
+            link.href = datafrom.toDataURL("image/webp");
         }
         link.click();
     }
