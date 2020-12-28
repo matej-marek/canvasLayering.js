@@ -1,3 +1,4 @@
+// single layer class
 class Layer{
     constructor(size,name,whole,position){
         this.size=size;
@@ -16,13 +17,15 @@ class Layer{
         this.ycbcr=[];
         this.alpha=[];
         this.jas=0;
-        this.alphaProcesingData=100;
+        this.alphaProcesingData=100; // alpha procentage
         this.layerImage=this.context.getImageData(0,0,this.size[0],this.size[1]);
         this.layerData=this.layerImage;
     }
+    //clear whole layer to basic
     clear(){
         this.context.clearRect(0, 0, this.size[0], this.size[1])
     }
+    //import image as img obj or base64 dataset or location data
     importImage(data){
         if(typeof(data)=="object"){
             this.context.drawImage(data,0,0,this.size[0],this.size[1]);
@@ -43,6 +46,7 @@ class Layer{
 
         }
     }
+    //layer up in whole canvas
     up(){
         if(this.positionLayer!=this.whole.layers.length){
             var upper_layer=this.whole.layers[this.positionLayer+1];
@@ -53,6 +57,7 @@ class Layer{
         }
         this.whole.render();
     }
+    //layer down in whole canvas
     down(){
         if(this.positionLayer!=0){
             var lower_layer=this.whole.layers[this.positionLayer-1];
@@ -63,19 +68,23 @@ class Layer{
         }
         this.whole.render();
     }
+    //change visibility
     visibility(){
         this.visible=!this.visible;
         this.whole.render();
     }
+    //destroy layer
     destroy(){
         console.log(this.position,this.whole);
         this.whole.layers.splice(this.position,1);
         console.log(this.whole);
     }
+    //rotate layer
     rotate(angle){
         this.layer.scene.context.rotate(angle * Math.PI / 180);
         this.ImageData();
     }
+    //create rectangle in the layer
     createRect(r,g,b,width,height,left,top){
         r=r||255;
         g=g||255;
@@ -89,6 +98,7 @@ class Layer{
         this.whole.render();
         this.ImageDataStarted();
     }
+    // convert rgb to ycbcr
     RGBtoYCbCr(){
         var width = this.size[0];
         var height= this.size[1];
@@ -107,6 +117,7 @@ class Layer{
         this.ycbcr=ycbcr;
         this.ImageData();
     }
+    // converr ycbcr to rgb
     YCbCrtoRGB(){   
         var ycbcr=this.ycbcr;
         var rgb = this.rgb;
@@ -117,6 +128,7 @@ class Layer{
         }
         this.ImageData();
     }
+    // add or substract brightness of image in EV
     brightness(value){
         var EV = value-this.jas;
         this.jas=value;
@@ -136,6 +148,7 @@ class Layer{
         }
         this.YCbCrtoRGB();
     }
+    // make layer more or less transparent
     alphaProcesing(procent){
         if(procent<0){
             procent=0;
@@ -156,7 +169,7 @@ class Layer{
         this.ImageData();
         this.alphaProcesingData=procent;
     }
-    
+    // get imagedata after build layer
     ImageDataStarted(){
         this.layerImage=this.context.getImageData(0,0,this.size[0],this.size[1]);
         this.layerData=this.layerImage.data;
@@ -187,6 +200,7 @@ class Layer{
         this.whole.render()
     }
 }
+// whole canvas data layer
 class Canvas{
     constructor(size,workspace,style){
         this.size=size;
@@ -207,6 +221,7 @@ class Canvas{
         this.options="";
         document.getElementById(workspace).appendChild(this.canvas);
     }
+    // create layer in this canvas
     createLayer(name,size){
         size=size||this.size;
         name=name||"Layer "+ this.layers.length.toString(10);
@@ -215,6 +230,7 @@ class Canvas{
         this.render();
         return layer;
     }
+    // find layer by name of canvas
     findLayer(name){
         var layerFind=null;
         this.layers.forEach(function(layer){
@@ -225,15 +241,18 @@ class Canvas{
         });
         return layerFind;
     }
+    // clear every layer via Layer.clear()
     clear(){
         this.layers.forEach(function(layer){
             layer.clear();
         });
         this.render();
     }
+    // clear canvas ('scene')
     clearScene(){
         this.context.clearRect(0,0,this.size[0],this.size[1]);
     }
+    //render every layer - into one whole canvas that is displayed
     render(){
         this.clearScene();
         var that= this;
@@ -249,6 +268,7 @@ class Canvas{
             this.layershow(this.layersShowDiv);
         }
     }
+    //make histogram data for histogram update method
     histogram(){
         var data = this.context.getImageData(0,0,this.size[0],this.size[1]).data;
         var y=[];
@@ -275,6 +295,7 @@ class Canvas{
         this.histogramDataB.push(b);
         this.updateHistogram();
     }
+    // show histogram @param div -> id of div where is histogram showed, @param text -> default YRGB, or text=='none' for button with no text 
     showHistogram(div,text){
         if(text=="none"){
             text="    ";
@@ -300,7 +321,6 @@ class Canvas{
             },
             colors: ['#dddddd']
         };
-
         function drawChart() {
             var datas=new Array(['hodnoty', 'Y']);
             for (var i = 0; i < 256; i++) {
@@ -314,6 +334,23 @@ class Canvas{
             that.chart.draw(data, that.options);},50);
         }
     }
+    // download image from whole canvas
+    download(name,format){
+        format=format||"jpg";
+        var datafrom = this.canvas;
+        var link = document.createElement('a');
+        var format=$("#savingFormat").val();
+        if(format=="jpg"){
+            link.download = name+'.jpg';
+            link.href = datafrom.toDataURL("image/jpeg");
+        }
+        else{
+            link.download = name+'.png';
+            link.href = datafrom.toDataURL("image/png");
+        }
+        link.click();
+    }
+    // update histogram - sizes, data etc, everytime with render method
     updateHistogram(){
         if(this.histView){
             var type= document.getElementsByClassName("cLBHActive")[0].getAttribute("data-type")||"y";
@@ -345,6 +382,7 @@ class Canvas{
             this.chart.draw(arr, this.options);
         }
     }
+    // same as histogramShow method -  if you want to show layer and work with them
     layershow(divLayers){
         divLayers=divLayers||this.layersShowDiv;
         this.layersShowDiv=divLayers;
@@ -408,25 +446,30 @@ class Canvas{
         }
     }
 }
+// change color of histogram Y,R,G,B
 function changeHistColor(el){ 
     document.getElementsByClassName("cLBHActive")[0].classList.remove("cLBHActive");
     el.classList.add("cLBHActive");
     canvas.updateHistogram();
 }
+//delete layer with given id
 function deleteLayer(id){
     canvas.layers[id].destroy();
     canvas.render();
 }
+//change visibility of layer with given id
 function visibilityOfLayer(id){
     canvas.layers[id].visibility();
 }
+//get layer lower with given id
 function layerDown(id){
     canvas.layers[id].down();
 }
+// get layer upper with given id
 function layerUp(id){
     canvas.layers[id].up();
 }
-
+// make img obj from imageData from canvas
 function imagedata_to_image(imagedata,i) {
     var canvas = document.createElement('canvas');
     var ctx = canvas.getContext('2d');
