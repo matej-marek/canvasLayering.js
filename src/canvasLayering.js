@@ -51,6 +51,7 @@ class Layer{
             this.positionLayer++;
             upper_layer.positionLayer--;
         }
+        this.whole.render();
     }
     down(){
         if(this.positionLayer!=0){
@@ -60,6 +61,7 @@ class Layer{
             this.positionLayer--;
             lower_layer.positionLayer++;
         }
+        this.whole.render();
     }
     visibility(){
         this.visible=!this.visible;
@@ -358,13 +360,13 @@ class Canvas{
         var x=0;
         for(var i=this.layers.length-1;i>=0;i--){
             if(i==this.layers.length-1){
-                var data="<input type='text' class='layerName' layer-id='"+i+"' value='"+this.layers[i].name+"'><button class='layerDown' layer-id='"+i+"'>↓</button>";
+                var data="<input type='text' class='layerName' layer-id='"+i+"' value='"+this.layers[i].name+"'><button class='layerDown'  onclick='layerDown("+i+")' layer-id='"+i+"'>↓</button>";
             }
             else if(i==0){
-                var data="<input type='text' class='layerName' layer-id='"+i+"' value='"+this.layers[i].name+"'><button class='layerUp' layer-id='"+i+"'>↑</button>";
+                var data="<input type='text' class='layerName' layer-id='"+i+"' value='"+this.layers[i].name+"'><button class='layerUp' onclick='layerUp("+i+")' layer-id='"+i+"'>↑</button>";
             }
             else{ 
-                var data="<input type='text' class='layerName' layer-id='"+i+"' value='"+this.layers[i].name+"'><button class='layerUp' layer-id='"+i+"'>↑</button><button class='layerDown' layer-id='"+i+"'>↓</button>";
+                var data="<input type='text' class='layerName' layer-id='"+i+"' value='"+this.layers[i].name+"'><button class='layerUp' onclick='layerUp("+i+")' layer-id='"+i+"'>↑</button><button class='layerDown' onclick='layerDown("+i+")' layer-id='"+i+"'>↓</button>";
             }
             var img=imagedata_to_image(this.layers[i].layerImage,i); 
             if(i==this.layers.length-1){
