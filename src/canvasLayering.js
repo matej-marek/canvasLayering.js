@@ -415,7 +415,6 @@ function deleteLayer(id){
 }
 function visibilityOfLayer(id){
     canvas.layers[id].visibility();
-    console.log(canvas.layers[id]);
 }
 
 function imagedata_to_image(imagedata,i) {
