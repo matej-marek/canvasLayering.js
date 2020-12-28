@@ -66,7 +66,9 @@ class Layer{
         this.whole.render();
     }
     destroy(){
+        console.log(this.position,this.whole);
         this.whole.layers.splice(this.position,1);
+        console.log(this.whole);
     }
     rotate(angle){
         this.layer.scene.context.rotate(angle * Math.PI / 180);
@@ -415,6 +417,12 @@ function deleteLayer(id){
 }
 function visibilityOfLayer(id){
     canvas.layers[id].visibility();
+}
+function layerDown(id){
+    canvas.layers[id].down();
+}
+function layerUp(id){
+    canvas.layers[id].up();
 }
 
 function imagedata_to_image(imagedata,i) {
